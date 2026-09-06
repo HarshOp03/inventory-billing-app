@@ -1,6 +1,7 @@
 // StockPro - Inventory Management & Dashboard Core Script
 document.addEventListener("DOMContentLoaded", () => {
-  // --- APPLICATION STATE ---
+  // --- APPLICATION STATE & CONFIG ---
+  const API_BASE_URL = 'https://inventory-billing-app-5met.onrender.com';
   let products = [];
   let currentTheme = localStorage.getItem("theme") || "dark";
 
@@ -53,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!token) return;
 
     try {
-      const res = await fetch('/api/products', {
+      const res = await fetch(`${API_BASE_URL}/api/products`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -496,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (token) {
       try {
-        const url = idField ? `/api/products/${idField}` : '/api/products';
+        const url = idField ? `${API_BASE_URL}/api/products/${idField}` : `${API_BASE_URL}/api/products`;
         const method = idField ? 'PUT' : 'POST';
         const res = await fetch(url, {
           method,
@@ -711,7 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (confirm("Are you sure you want to delete this product?")) {
             const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
             if (token) {
-              fetch(`/api/products/${prodId}`, {
+              fetch(`${API_BASE_URL}/api/products/${prodId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
               }).catch(err => console.error("Database delete error:", err));
@@ -761,7 +762,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
                 if (token) {
                   try {
-                    const res = await fetch('/api/products/sync', {
+                    const res = await fetch(`${API_BASE_URL}/api/products/sync`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',

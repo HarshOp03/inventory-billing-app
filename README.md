@@ -187,7 +187,7 @@ npm start
 ### 3. Open in Browser
 Navigate to:
 ```
-http://localhost:3000
+https://inventory-billing-app-5met.onrender.com/
 ```
 
 ### 4. Logging In

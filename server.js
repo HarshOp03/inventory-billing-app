@@ -233,6 +233,7 @@ app.listen(PORT, () => {
   console.log(`
   ======================================================
   🚀 StockPro Server & SQL Database running at:
+     Live:  https://inventory-billing-app-5met.onrender.com/
      Local: http://localhost:${PORT}
   ======================================================
   `);
