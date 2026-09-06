@@ -187,7 +187,7 @@ npm start
 ### 3. Open in Browser
 Navigate to:
 ```
-https://inventory-billing-app-5met.onrender.com/
+https://inventory-management-server-r1yj.onrender.com/
 ```
 
 ### 4. Logging In

@@ -5,7 +5,7 @@
 
 // // StockPro - Authentication & Session Management Module
 // (function () {
-//   const API_BASE = 'https://inventory-billing-app-5met.onrender.com/api/auth';
+//   const API_BASE = 'https://inventory-management-server-r1yj.onrender.com/api/auth';
 //   
 //   // State
 //   let currentUser = null;

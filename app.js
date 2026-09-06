@@ -1,7 +1,7 @@
 // StockPro - Inventory Management & Dashboard Core Script
 document.addEventListener("DOMContentLoaded", () => {
   // --- APPLICATION STATE & CONFIG ---
-  const API_BASE_URL = 'https://inventory-billing-app-5met.onrender.com';
+  const API_BASE_URL = 'https://inventory-management-server-r1yj.onrender.com';
   let products = [];
   let currentTheme = localStorage.getItem("theme") || "dark";
 
