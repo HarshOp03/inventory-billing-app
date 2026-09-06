@@ -64,9 +64,12 @@ const initialInvoices = [
   }
 ];
 
-// Export to window if running in browser
+// Export to window if running in browser, or module.exports in Node
 if (typeof window !== 'undefined') {
   window.initialProducts = initialProducts;
   window.initialCustomers = initialCustomers;
   window.initialInvoices = initialInvoices;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { initialProducts, initialCustomers, initialInvoices };
 }

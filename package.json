@@ -4,10 +4,16 @@
   "description": "Premium Inventory Management & Billing SPA",
   "main": "index.html",
   "scripts": {
-    "start": "npx -y serve .",
-    "dev": "npx -y serve ."
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  }
 }

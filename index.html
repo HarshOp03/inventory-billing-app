@@ -2,20 +2,133 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StockBill Pro - Inventory Management & Invoicing System</title>
-  <meta name="description" content="Premium, single-page application (SPA) for inventory tracking, customer billing, and reporting analytics.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>StockPro - Inventory Management & Dashboard</title>
+  <meta name="description" content="Fast, modern responsive web app for real-time inventory tracking, stock analytics, and management.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!-- Mobile Backdrop Overlay for Drawer -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+  <!-- Full-Screen Auth Overlay (Login & Registration) -->
+  <div id="auth-overlay" class="auth-overlay active">
+    <div class="auth-card glass-card">
+      <div class="auth-header">
+        <div class="auth-brand">
+          <div class="auth-logo-icon">S</div>
+          <h2>StockPro</h2>
+        </div>
+        <p class="auth-subtitle">Secure SQL Database & Inventory Management Portal</p>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab-btn active" type="button">Sign In</button>
+        <button id="tab-register" class="auth-tab-btn" type="button">Create Account</button>
+      </div>
+
+      <!-- Alert / Notice Banner -->
+      <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+      <!-- 1. LOGIN FORM -->
+      <form id="form-login" class="auth-form active">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="login-email" class="form-control" placeholder="admin@stockpro.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="login-password">Password</label>
+          </div>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" data-target="login-password" aria-label="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-login" class="btn btn-primary auth-submit-btn">
+          <span>Sign In to Dashboard</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <div class="demo-login-box">
+          <span>Testing for the first time?</span>
+          <button type="button" id="btn-quick-demo" class="btn-quick-demo">
+            ⚡ Quick Demo Sign In
+          </button>
+        </div>
+      </form>
+
+      <!-- 2. REGISTRATION FORM -->
+      <form id="form-register" class="auth-form">
+        <div class="form-group">
+          <label for="reg-name">Full Name *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Alex Morgan" required autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Work Email *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="reg-email" class="form-control" placeholder="alex@company.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Password (min. 6 characters) *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-password" class="form-control" placeholder="Create strong password" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-toggle-password" data-target="reg-password" aria-label="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password-confirm">Confirm Password *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-password-confirm" class="form-control" placeholder="Repeat your password" minlength="6" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-register" class="btn btn-primary auth-submit-btn">
+          <span>Create My Account</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <p class="auth-terms-note">
+          By signing up, an isolated inventory dataset is created for your account in the local SQLite database.
+        </p>
+      </form>
+    </div>
+  </div>
+
   <div class="app-container">
     
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        <div class="logo-icon">S</div>
-        <span class="logo-text">StockBill Pro</span>
+        <div class="logo-brand">
+          <div class="logo-icon">S</div>
+          <span class="logo-text">StockPro</span>
+        </div>
+        <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close Sidebar">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
       
       <nav class="sidebar-menu">
@@ -32,29 +145,11 @@
               <span>Inventory</span>
             </a>
           </li>
-          <li class="menu-item" data-target="billing">
-            <a href="#billing">
-              <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
-              <span>Billing</span>
-            </a>
-          </li>
-          <li class="menu-item" data-target="invoices">
-            <a href="#invoices">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span>Invoices</span>
-            </a>
-          </li>
-          <li class="menu-item" data-target="customers">
-            <a href="#customers">
-              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Customers</span>
-            </a>
-          </li>
         </ul>
       </nav>
       
       <div class="sidebar-footer">
-        <p>&copy; 2026 StockBill Pro</p>
+        <p>&copy; 2026 StockPro</p>
         <p style="margin-top: 4px; font-size: 10px;">Offline Local Database</p>
       </div>
     </aside>
@@ -64,20 +159,32 @@
       
       <!-- Top Header Bar -->
       <header class="header-bar">
-        <div class="page-title">
-          <h1 id="current-section-title">Dashboard</h1>
-          <p id="current-section-desc">Real-time business performance overview.</p>
-        </div>
-        <div class="header-actions">
-          <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme">
-            <!-- Dark mode icon (moon) by default -->
-            <svg id="moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            <!-- Light mode icon (sun) hidden by default -->
-            <svg id="sun-icon" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <div class="header-left">
+          <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open navigation menu">
+            <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <div style="font-size: 14px; text-align: right;">
-            <div id="system-date" style="font-weight: 600;">2026-08-25</div>
-            <div style="font-size: 11px; color: var(--text-muted);">Antigravity Mode</div>
+          <div class="page-title">
+            <h1 id="current-section-title">Dashboard</h1>
+            <p id="current-section-desc">Real-time inventory overview & performance.</p>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <div class="header-meta">
+            <div id="system-date" style="font-weight: 600;">2026-09-04</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Stock Management</div>
+          </div>
+          
+          <!-- User Profile & Logout Widget -->
+          <div class="user-profile-badge" id="user-profile-badge" style="display: none;">
+            <div class="user-avatar" id="header-user-avatar">A</div>
+            <div class="user-details">
+              <span class="user-name" id="header-user-name">User</span>
+              <span class="user-role" id="header-user-role">Administrator</span>
+            </div>
+            <button id="btn-logout" class="btn-logout" title="Sign Out" aria-label="Sign Out">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
           </div>
         </div>
       </header>
@@ -91,22 +198,32 @@
           <!-- Summary Cards Row -->
           <div class="stats-grid">
             <div class="glass-card stat-card">
-              <div class="stat-icon success">
-                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <div class="stat-icon primary">
+                <svg viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
               </div>
               <div class="stat-info">
-                <span class="stat-label">Total Revenue</span>
-                <span class="stat-value" id="stat-revenue">$0.00</span>
+                <span class="stat-label">Total Products</span>
+                <span class="stat-value" id="stat-products-count">0</span>
               </div>
             </div>
             
             <div class="glass-card stat-card">
-              <div class="stat-icon primary">
-                <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              <div class="stat-icon success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12"/><path d="M6 8h12"/><path d="M6 13l8.5 8"/><path d="M6 13h3"/><path d="M9 13c6.667 0 6.667-10 0-10"/></svg>
               </div>
               <div class="stat-info">
                 <span class="stat-label">Stock Value</span>
-                <span class="stat-value" id="stat-stock-value">$0.00</span>
+                <span class="stat-value" id="stat-stock-value">₹0.00</span>
+              </div>
+            </div>
+
+            <div class="glass-card stat-card">
+              <div class="stat-icon info">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Units</span>
+                <span class="stat-value" id="stat-total-stock">0</span>
               </div>
             </div>
 
@@ -115,31 +232,23 @@
                 <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </div>
               <div class="stat-info">
-                <span class="stat-label">Low Stock items</span>
+                <span class="stat-label">Low Stock Alerts</span>
                 <span class="stat-value" id="stat-low-stock">0</span>
-              </div>
-            </div>
-
-            <div class="glass-card stat-card">
-              <div class="stat-icon danger">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              </div>
-              <div class="stat-info">
-                <span class="stat-label">Invoices Issued</span>
-                <span class="stat-value" id="stat-invoice-count">0</span>
               </div>
             </div>
           </div>
 
           <!-- Charts and Analytics layout -->
           <div class="dashboard-grid">
-            <!-- Sales Chart Card -->
+            <!-- Category Distribution Chart Card -->
             <div class="glass-card">
               <div class="chart-header">
-                <h3>Sales Performance</h3>
-                <span style="font-size: 12px; color: var(--text-muted);">Last 30 Days</span>
+                <div>
+                  <h3>Stock by Category</h3>
+                  <span style="font-size: 12px; color: var(--text-muted);">Inventory valuation breakdown</span>
+                </div>
               </div>
-              <div class="chart-container" id="revenue-chart-wrapper">
+              <div class="chart-container" id="category-chart-wrapper">
                 <!-- SVG Chart injected dynamically by JS -->
               </div>
             </div>
@@ -148,7 +257,7 @@
             <div class="glass-card" style="display: flex; flex-direction: column;">
               <div class="panel-header">
                 <h3>Low Stock Warning</h3>
-                <a href="#inventory" onclick="document.querySelector('[data-target=inventory]').click()" style="font-size: 12px; color: var(--color-primary); text-decoration: none; font-weight: 500;">View All</a>
+                <a href="#inventory" class="nav-jump-btn" data-target="inventory" style="font-size: 12px; color: var(--color-primary); text-decoration: none; font-weight: 500;">View All</a>
               </div>
               <div style="flex-grow: 1; overflow-y: auto; max-height: 250px;">
                 <ul id="dashboard-low-stock-list" style="list-style: none; display: flex; flex-direction: column; gap: 12px;">
@@ -158,26 +267,27 @@
             </div>
           </div>
 
-          <!-- Recent Invoices table -->
+          <!-- Stock Overview Table -->
           <div class="glass-card">
             <div class="panel-header">
-              <h3>Recent Invoices</h3>
-              <a href="#invoices" onclick="document.querySelector('[data-target=invoices]').click()" style="font-size: 12px; color: var(--color-primary); text-decoration: none; font-weight: 500;">View All Transactions</a>
+              <h3>Stock Overview</h3>
+              <a href="#inventory" class="nav-jump-btn" data-target="inventory" style="font-size: 12px; color: var(--color-primary); text-decoration: none; font-weight: 500;">Manage All Inventory &rarr;</a>
             </div>
             <div class="table-responsive">
               <table class="custom-table">
                 <thead>
                   <tr>
-                    <th>Invoice ID</th>
-                    <th>Customer Name</th>
-                    <th>Date</th>
-                    <th>Total</th>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Unit Price (₹)</th>
+                    <th>Stock</th>
+                    <th>Total Value (₹)</th>
                     <th>Status</th>
-                    <th>Action</th>
                   </tr>
                 </thead>
-                <tbody id="dashboard-invoices-tbody">
-                  <!-- Recent Invoices injected by JS -->
+                <tbody id="dashboard-products-tbody">
+                  <!-- Products overview injected by JS -->
                 </tbody>
               </table>
             </div>
@@ -196,14 +306,14 @@
               <input type="text" id="inventory-search" class="form-control" placeholder="Search product name or SKU...">
             </div>
             
-            <div class="form-group" style="margin-bottom: 0; min-width: 160px;">
+            <div class="form-group filter-select-group" style="margin-bottom: 0;">
               <select id="inventory-filter-category" class="form-control">
                 <option value="all">All Categories</option>
                 <!-- Categories populated by JS -->
               </select>
             </div>
 
-            <div class="form-group" style="margin-bottom: 0; min-width: 160px;">
+            <div class="form-group filter-select-group" style="margin-bottom: 0;">
               <select id="inventory-filter-status" class="form-control">
                 <option value="all">All Stock Status</option>
                 <option value="low">Low Stock Alert</option>
@@ -212,11 +322,20 @@
               </select>
             </div>
 
-            <div style="margin-left: auto; display: flex; gap: 8px;">
+            <div class="filter-actions">
               <button id="btn-add-product" class="btn btn-primary">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 <span>Add Product</span>
               </button>
+              <button id="btn-export-db" class="btn btn-secondary" title="Export Inventory Database">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export</span>
+              </button>
+              <button id="btn-import-db" class="btn btn-secondary" title="Import Inventory Database" onclick="document.getElementById('import-file-input').click()">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Import</span>
+              </button>
+              <input type="file" id="import-file-input" style="display: none;" accept=".json">
             </div>
           </div>
 
@@ -228,7 +347,7 @@
                     <th>SKU</th>
                     <th>Product Name</th>
                     <th>Category</th>
-                    <th>Unit Price</th>
+                    <th>Unit Price (₹)</th>
                     <th>Stock Quantity</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -243,269 +362,32 @@
 
         </section>
 
-        <!-- 3. BILLING SECTION -->
-        <section id="section-billing" class="app-section">
-          
-          <div class="billing-grid">
-            
-            <!-- Left Side: Invoice Editor -->
-            <div class="glass-card" style="display: flex; flex-direction: column; gap: 20px;">
-              <div class="panel-header">
-                <h3>Invoice Details</h3>
-                <button id="btn-clear-billing" class="btn btn-secondary btn-sm">Clear Cart</button>
-              </div>
-
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="billing-customer">Select Customer *</label>
-                  <select id="billing-customer" class="form-control">
-                    <option value="">-- Choose Customer --</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="billing-date">Invoice Date</label>
-                  <input type="date" id="billing-date" class="form-control">
-                </div>
-              </div>
-
-              <!-- Product Quick Add Selector -->
-              <div style="border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 16px; background-color: rgba(99, 102, 241, 0.02);">
-                <h4 style="margin-bottom: 12px; font-size: 14px;">Add Items to Invoice</h4>
-                <div class="form-grid" style="grid-template-columns: 2fr 1fr auto; align-items: flex-end; gap: 12px; margin-bottom: 0;">
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label for="billing-product-select">Select Product</label>
-                    <select id="billing-product-select" class="form-control">
-                      <option value="">-- Select Product --</option>
-                    </select>
-                  </div>
-                  <div class="form-group" style="margin-bottom: 0;">
-                    <label for="billing-product-qty">Quantity</label>
-                    <input type="number" id="billing-product-qty" class="form-control" value="1" min="1">
-                  </div>
-                  <button id="btn-add-to-billing" class="btn btn-primary" style="height: 42px;">Add</button>
-                </div>
-              </div>
-
-              <!-- Invoice Cart Items Table -->
-              <div class="table-responsive">
-                <table class="custom-table">
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Unit Price</th>
-                      <th style="width: 120px; text-align: center;">Qty</th>
-                      <th>Total</th>
-                      <th style="width: 50px;"></th>
-                    </tr>
-                  </thead>
-                  <tbody id="billing-cart-tbody">
-                    <!-- Billing items inserted here -->
-                  </tbody>
-                </table>
-              </div>
-
-              <!-- Discounts, Taxes & Terms -->
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="billing-discount">Discount (%)</label>
-                  <input type="number" id="billing-discount" class="form-control" min="0" max="100" value="0">
-                </div>
-                <div class="form-group">
-                  <label for="billing-tax">Tax (GST/VAT %)</label>
-                  <input type="number" id="billing-tax" class="form-control" min="0" max="100" value="10">
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Right Side: Real-time Invoice Printable Paper Preview -->
-            <div class="invoice-preview-container">
-              <div class="panel-header">
-                <h3>Live Invoice Preview</h3>
-                <div style="display: flex; gap: 8px;">
-                  <button id="btn-generate-invoice" class="btn btn-success">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    <span>Save & Issue Invoice</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Printable Invoice component -->
-              <div class="invoice-paper" id="billing-invoice-paper">
-                <div class="invoice-paper-header">
-                  <div class="company-details">
-                    <h2>STOCKBILL PRO LLC</h2>
-                    <p>Suite 101, Business Towers</p>
-                    <p>Springfield, US 45678</p>
-                    <p>Email: finance@stockbillpro.com</p>
-                  </div>
-                  <div class="invoice-meta">
-                    <h3>INVOICE</h3>
-                    <p>Invoice #: <span id="paper-invoice-id">INV-YYYY-XXXX</span></p>
-                    <p>Date: <span id="paper-invoice-date">2026-08-25</span></p>
-                  </div>
-                </div>
-
-                <div class="invoice-parties">
-                  <div class="party-box">
-                    <h4>Billed To:</h4>
-                    <p><strong id="paper-customer-name">Select customer details</strong></p>
-                    <p id="paper-customer-email"></p>
-                    <p id="paper-customer-phone"></p>
-                    <p id="paper-customer-address"></p>
-                  </div>
-                  <div class="party-box">
-                    <h4>Payment Terms:</h4>
-                    <p>Due upon receipt of invoice.</p>
-                    <p>Status: <strong>Unpaid / Draft</strong></p>
-                  </div>
-                </div>
-
-                <table class="invoice-items-table">
-                  <thead>
-                    <tr>
-                      <th style="text-align: left;">Item Description</th>
-                      <th style="text-align: right; width: 80px;">Qty</th>
-                      <th style="text-align: right; width: 100px;">Rate</th>
-                      <th style="text-align: right; width: 100px;">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody id="paper-items-tbody">
-                    <tr>
-                      <td colspan="4" style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">No products added to invoice</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div class="invoice-totals">
-                  <table class="totals-table">
-                    <tr>
-                      <td>Subtotal:</td>
-                      <td style="text-align: right;" id="paper-subtotal">$0.00</td>
-                    </tr>
-                    <tr id="paper-discount-row">
-                      <td>Discount:</td>
-                      <td style="text-align: right;" id="paper-discount">$0.00</td>
-                    </tr>
-                    <tr>
-                      <td>Tax:</td>
-                      <td style="text-align: right;" id="paper-tax">$0.00</td>
-                    </tr>
-                    <tr class="grand-total">
-                      <td>Total Due:</td>
-                      <td style="text-align: right;" id="paper-total">$0.00</td>
-                    </tr>
-                  </table>
-                </div>
-
-                <div class="invoice-footer-notes">
-                  <p>Thank you for your business!</p>
-                  <p style="margin-top: 4px; font-size: 9px; opacity: 0.8;">Generated digitally by StockBill Pro</p>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-
-        </section>
-
-        <!-- 4. INVOICES HISTORY SECTION -->
-        <section id="section-invoices" class="app-section">
-          
-          <div class="filter-bar glass-card">
-            <div class="search-wrapper">
-              <span class="search-icon">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </span>
-              <input type="text" id="invoices-search" class="form-control" placeholder="Search by Invoice ID or Customer Name...">
-            </div>
-
-            <div style="margin-left: auto; display: flex; gap: 8px;">
-              <button id="btn-export-db" class="btn btn-secondary">Export Database</button>
-              <button id="btn-import-db" class="btn btn-secondary" onclick="document.getElementById('import-file-input').click()">Import Database</button>
-              <input type="file" id="import-file-input" style="display: none;" accept=".json">
-            </div>
-          </div>
-
-          <div class="glass-card">
-            <div class="table-responsive">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Invoice ID</th>
-                    <th>Customer Name</th>
-                    <th>Date Issued</th>
-                    <th>Items</th>
-                    <th>Subtotal</th>
-                    <th>Total Paid</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="invoices-tbody">
-                  <!-- Past invoices list -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </section>
-
-        <!-- 5. CUSTOMERS SECTION -->
-        <section id="section-customers" class="app-section">
-          
-          <div class="filter-bar glass-card">
-            <div class="search-wrapper">
-              <span class="search-icon">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </span>
-              <input type="text" id="customers-search" class="form-control" placeholder="Search by customer name, email, phone...">
-            </div>
-            
-            <div style="margin-left: auto;">
-              <button id="btn-add-customer" class="btn btn-primary">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>Add Customer</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="glass-card">
-            <div class="table-responsive">
-              <table class="custom-table">
-                <thead>
-                  <tr>
-                    <th>Customer Name</th>
-                    <th>Email Address</th>
-                    <th>Phone Number</th>
-                    <th>Shipping/Billing Address</th>
-                    <th>Total Purchases</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="customers-tbody">
-                  <!-- Customers injected dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </section>
-
       </div>
 
     </main>
 
   </div>
 
+  <!-- Mobile Bottom Navigation Bar for quick 1-tap switching -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-target="dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-btn" data-target="inventory" aria-label="Inventory">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>Inventory</span>
+    </button>
+  </nav>
+
   <!-- MODALS -->
 
-  <!-- A. Add/Edit Product Modal -->
+  <!-- Add/Edit Product Modal -->
   <div id="modal-product" class="modal-overlay">
     <div class="modal-container">
       <div class="modal-header">
         <div class="modal-title"><h3 id="product-modal-title">Add New Product</h3></div>
-        <button class="btn-icon modal-close-btn" data-modal="modal-product">
+        <button class="btn-icon modal-close-btn" data-modal="modal-product" aria-label="Close modal">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -531,7 +413,7 @@
 
           <div class="form-grid">
             <div class="form-group">
-              <label for="product-price">Unit Price ($) *</label>
+              <label for="product-price">Unit Price (₹) *</label>
               <input type="number" id="product-price" class="form-control" step="0.01" min="0" required placeholder="0.00">
             </div>
             <div class="form-group">
@@ -552,74 +434,9 @@
     </div>
   </div>
 
-  <!-- B. Add/Edit Customer Modal -->
-  <div id="modal-customer" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <div class="modal-title"><h3 id="customer-modal-title">Add New Customer</h3></div>
-        <button class="btn-icon modal-close-btn" data-modal="modal-customer">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form id="customer-form">
-          <input type="hidden" id="customer-id">
-          
-          <div class="form-group">
-            <label for="customer-name">Full Name / Business Title *</label>
-            <input type="text" id="customer-name" class="form-control" required placeholder="e.g. Acme Corp or John Doe">
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="customer-email">Email Address</label>
-              <input type="email" id="customer-email" class="form-control" placeholder="john.doe@example.com">
-            </div>
-            <div class="form-group">
-              <label for="customer-phone">Phone Number</label>
-              <input type="text" id="customer-phone" class="form-control" placeholder="+1 (555) 000-0000">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="customer-address">Billing/Shipping Address</label>
-            <textarea id="customer-address" class="form-control" rows="3" placeholder="Street, Suite, City, ZIP Code"></textarea>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary modal-close-btn" data-modal="modal-customer">Cancel</button>
-        <button id="btn-save-customer" class="btn btn-primary">Save Customer</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- C. Invoice View Modal (Printable/Saveable) -->
-  <div id="modal-invoice-detail" class="modal-overlay">
-    <div class="modal-container" style="max-width: 840px;">
-      <div class="modal-header">
-        <div class="modal-title"><h3>Invoice Transaction Details</h3></div>
-        <button class="btn-icon modal-close-btn" data-modal="modal-invoice-detail">
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="modal-body" style="background-color: var(--bg-primary);">
-        <div id="viewer-invoice-paper-container">
-          <!-- Injected dynamically based on billing-invoice-paper template -->
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary modal-close-btn" data-modal="modal-invoice-detail">Close</button>
-        <button id="btn-print-invoice" class="btn btn-primary">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          <span>Print / Save PDF</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- Import JS Scripts -->
   <script src="mockData.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
