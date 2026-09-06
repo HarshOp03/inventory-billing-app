@@ -12,7 +12,8 @@
   <!-- Mobile Backdrop Overlay for Drawer -->
   <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
-  <!-- Full-Screen Auth Overlay (Login & Registration) -->
+  <!-- Full-Screen Auth Overlay (Login & Registration) [COMMENTED OUT: Login disabled] -->
+  <!--
   <div id="auth-overlay" class="auth-overlay active">
     <div class="auth-card glass-card">
       <div class="auth-header">
@@ -23,16 +24,13 @@
         <p class="auth-subtitle">Secure SQL Database & Inventory Management Portal</p>
       </div>
 
-      <!-- Tab Switcher -->
       <div class="auth-tabs">
         <button id="tab-login" class="auth-tab-btn active" type="button">Sign In</button>
         <button id="tab-register" class="auth-tab-btn" type="button">Create Account</button>
       </div>
 
-      <!-- Alert / Notice Banner -->
       <div id="auth-alert" class="auth-alert" style="display: none;"></div>
 
-      <!-- 1. LOGIN FORM -->
       <form id="form-login" class="auth-form active">
         <div class="form-group">
           <label for="login-email">Email Address</label>
@@ -68,7 +66,6 @@
         </div>
       </form>
 
-      <!-- 2. REGISTRATION FORM -->
       <form id="form-register" class="auth-form">
         <div class="form-group">
           <label for="reg-name">Full Name *</label>
@@ -116,6 +113,7 @@
       </form>
     </div>
   </div>
+  -->
 
   <div class="app-container">
     
@@ -175,7 +173,8 @@
             <div style="font-size: 11px; color: var(--text-muted);">Stock Management</div>
           </div>
           
-          <!-- User Profile & Logout Widget -->
+          <!-- User Profile & Logout Widget [COMMENTED OUT: Login disabled] -->
+          <!--
           <div class="user-profile-badge" id="user-profile-badge" style="display: none;">
             <div class="user-avatar" id="header-user-avatar">A</div>
             <div class="user-details">
@@ -186,6 +185,7 @@
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
           </div>
+          -->
         </div>
       </header>
 
@@ -436,7 +436,7 @@
 
   <!-- Import JS Scripts -->
   <script src="mockData.js"></script>
-  <script src="auth.js"></script>
+  <!-- <script src="auth.js"></script> [COMMENTED OUT: Login disabled] -->
   <script src="app.js"></script>
 </body>
 </html>

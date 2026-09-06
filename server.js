@@ -26,8 +26,10 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  // When login is disabled, allow unauthenticated requests with a default user
   if (!token) {
-    return res.status(401).json({ error: 'Access token required. Please sign in.' });
+    req.user = { id: 'default_admin', name: 'Admin', role: 'admin' };
+    return next();
   }
 
   try {
@@ -35,145 +37,62 @@ function authenticateToken(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
-    return res.status(403).json({ error: 'Session expired or invalid token. Please sign in again.' });
+    req.user = { id: 'default_admin', name: 'Admin', role: 'admin' };
+    next();
   }
 }
 
-// --- AUTHENTICATION ROUTES ---
-
-/**
- * POST /api/auth/register
- * Creates a new user account, hashes password, seeds initial inventory, and returns JWT.
- */
-app.post('/api/auth/register', (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    if (!name || !name.trim()) {
-      return res.status(400).json({ error: 'Full name is required.' });
-    }
-
-    if (!email || !email.trim() || !email.includes('@')) {
-      return res.status(400).json({ error: 'A valid email address is required.' });
-    }
-
-    if (!password || password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
-
-    // Check if email already exists
-    const existing = db.findUserByEmail(cleanEmail);
-    if (existing) {
-      return res.status(409).json({ error: 'An account with this email address already exists.' });
-    }
-
-    // Hash password with bcrypt
-    const saltRounds = 10;
-    const passwordHash = bcrypt.hashSync(password, saltRounds);
-
-    const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
-    const user = db.createUser({
-      id: userId,
-      name: name.trim(),
-      email: cleanEmail,
-      passwordHash,
-      role: 'admin'
-    });
-
-    // Seed default sample inventory for the new user account
-    if (Array.isArray(initialProducts) && initialProducts.length > 0) {
-      db.seedProducts(userId, initialProducts);
-    }
-
-    // Generate JWT token (valid for 7 days)
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.status(201).json({
-      message: 'Registration successful',
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'An internal server error occurred during registration.' });
-  }
-});
-
-/**
- * POST /api/auth/login
- * Validates credentials and returns JWT bearer token.
- */
-app.post('/api/auth/login', (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Please provide both email and password.' });
-    }
-
-    const cleanEmail = email.trim().toLowerCase();
-    const user = db.findUserByEmail(cleanEmail);
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
-    }
-
-    // Compare bcrypt hash
-    const isValid = bcrypt.compareSync(password, user.password_hash);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
-    }
-
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'An internal server error occurred during login.' });
-  }
-});
-
-/**
- * GET /api/auth/me
- * Returns profile of the currently authenticated user.
- */
-app.get('/api/auth/me', authenticateToken, (req, res) => {
-  try {
-    const user = db.findUserById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ error: 'User profile not found.' });
-    }
-    res.json({ user });
-  } catch (error) {
-    console.error('Fetch user error:', error);
-    res.status(500).json({ error: 'Failed to fetch user profile.' });
-  }
-});
+// --- AUTHENTICATION ROUTES [COMMENTED OUT: Login disabled] ---
+//
+// app.post('/api/auth/register', (req, res) => {
+//   try {
+//     const { name, email, password } = req.body;
+//     if (!name || !name.trim()) return res.status(400).json({ error: 'Full name is required.' });
+//     if (!email || !email.trim() || !email.includes('@')) return res.status(400).json({ error: 'A valid email address is required.' });
+//     if (!password || password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+//     const cleanEmail = email.trim().toLowerCase();
+//     const existing = db.findUserByEmail(cleanEmail);
+//     if (existing) return res.status(409).json({ error: 'An account with this email address already exists.' });
+//     const saltRounds = 10;
+//     const passwordHash = bcrypt.hashSync(password, saltRounds);
+//     const userId = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+//     const user = db.createUser({ id: userId, name: name.trim(), email: cleanEmail, passwordHash, role: 'admin' });
+//     if (Array.isArray(initialProducts) && initialProducts.length > 0) db.seedProducts(userId, initialProducts);
+//     const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+//     res.status(201).json({ message: 'Registration successful', token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+//   } catch (error) {
+//     console.error('Registration error:', error);
+//     res.status(500).json({ error: 'An internal server error occurred during registration.' });
+//   }
+// });
+//
+// app.post('/api/auth/login', (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     if (!email || !password) return res.status(400).json({ error: 'Please provide both email and password.' });
+//     const cleanEmail = email.trim().toLowerCase();
+//     const user = db.findUserByEmail(cleanEmail);
+//     if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
+//     const isValid = bcrypt.compareSync(password, user.password_hash);
+//     if (!isValid) return res.status(401).json({ error: 'Invalid email or password.' });
+//     const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+//     res.json({ message: 'Login successful', token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+//   } catch (error) {
+//     console.error('Login error:', error);
+//     res.status(500).json({ error: 'An internal server error occurred during login.' });
+//   }
+// });
+//
+// app.get('/api/auth/me', authenticateToken, (req, res) => {
+//   try {
+//     const user = db.findUserById(req.user.id);
+//     if (!user) return res.status(404).json({ error: 'User profile not found.' });
+//     res.json({ user });
+//   } catch (error) {
+//     console.error('Fetch user error:', error);
+//     res.status(500).json({ error: 'Failed to fetch user profile.' });
+//   }
+// });
 
 // --- INVENTORY PRODUCTS API (PROTECTED) ---
 

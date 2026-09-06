@@ -36,13 +36,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAll();
     setupEventListeners();
 
-    // Check Authentication & Load live products from SQLite database
-    if (window.StockProAuth) {
-      const isAuthenticated = await window.StockProAuth.checkSession();
-      if (isAuthenticated) {
-        await loadProductsFromAPI();
-      }
-    }
+    // Check Authentication & Load live products from SQLite database [COMMENTED OUT: Login disabled]
+    // if (window.StockProAuth) {
+    //   const isAuthenticated = await window.StockProAuth.checkSession();
+    //   if (isAuthenticated) {
+    //     await loadProductsFromAPI();
+    //   }
+    // }
   }
 
   /**
@@ -796,17 +796,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 17. Listen for Auth Events (Login / Logout)
-    window.addEventListener('auth:login', async () => {
-      await loadProductsFromAPI();
-    });
+    // 17. Listen for Auth Events (Login / Logout) [COMMENTED OUT: Login disabled]
+    // window.addEventListener('auth:login', async () => {
+    //   await loadProductsFromAPI();
+    // });
 
-    window.addEventListener('auth:logout', () => {
-      products = [];
-      saveToStorage("products", products);
-      renderCategoryDropdowns();
-      renderAll();
-    });
+    // window.addEventListener('auth:logout', () => {
+    //   products = [];
+    //   saveToStorage("products", products);
+    //   renderCategoryDropdowns();
+    //   renderAll();
+    // });
   }
 
   // --- UTILITY FUNCTIONS ---
