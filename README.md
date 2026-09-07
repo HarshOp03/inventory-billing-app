@@ -1,22 +1,22 @@
 # 📦 StockPro - Inventory Management & Dashboard System
 
-A modern, fast, and responsive web application for real-time inventory tracking, stock analytics, user authentication, and data management. Built with a glassmorphic dark UI, vanilla JavaScript Single-Page Application (SPA) frontend, a lightweight Node.js/Express backend, and an embedded SQLite database engine.
+A modern, fast, and responsive web application for real-time inventory tracking, stock analytics, and data management. Built with a sleek glassmorphic dark UI, vanilla JavaScript Single-Page Application (SPA) frontend, and an offline-first **LocalStorage** persistence engine with zero database server dependencies.
 
 ---
 
 ## 🌟 Key Features
 
-* **🔐 User Authentication & Account Isolation**
-  * Dedicated glassmorphic **Sign In** and **Create Account** interface.
-  * Passwords securely hashed with `bcryptjs` (10 salt rounds).
-  * Stateless session management via JSON Web Tokens (**JWT**).
-  * Isolated inventory records per user account.
-  * **⚡ Quick Demo Sign In** for immediate 1-click evaluation.
-  * Header user profile badge with avatar and safe **Sign Out** flow.
+* **🔐 User Authentication & LocalStorage Session Management**
+  * Modern glassmorphic **Sign In** and **Create Account** interface with password visibility toggles.
+  * Instant **⚡ Quick Demo Sign In** for 1-click evaluation (`admin@stockpro.com` / `admin123`).
+  * Account validation with duplicate email checks and password verification.
+  * Header user profile badge displaying user avatar initials, name, role ("Admin"), and a smooth **Sign Out** flow.
+  * Persistent sessions stored directly in `localStorage` (`stockpro_user`, `stockpro_token`).
 
 * **📦 Comprehensive Inventory Management**
   * Complete CRUD operations (Create, Read, Update, Delete) for inventory items.
-  * Automatic uniqueness validation for SKU codes per user.
+  * Instant, offline data persistence directly in the browser via `localStorage`.
+  * Automatic uniqueness validation for SKU codes.
   * Stock status indicators with visual badges (`In Stock`, `Low Stock Alert`, `Out of Stock`).
   * Live multi-criteria filtering: real-time search (by name or SKU), category filter, and stock status filter.
 
@@ -26,10 +26,10 @@ A modern, fast, and responsive web application for real-time inventory tracking,
   * **Dynamic SVG Category Valuation Chart**: Custom programmatic SVG bar chart with responsive gridlines, price scales, and hover tooltips.
   * **Stock Overview Table**: Quick glance at the most recent inventory records.
 
-* **💾 Embedded SQL Database Engine**
-  * Powered by Node 24's native `node:sqlite` (`DatabaseSync`), requiring **zero** external database servers or complex C++ build tools.
-  * Stored in a single file (`database/stockpro.db`) with Write-Ahead Logging (WAL) and Foreign Key enforcement.
-  * Parameterized queries to prevent SQL injection vulnerabilities.
+* **💾 Pure LocalStorage Engine**
+  * Powered entirely by the Web Storage API (`localStorage`), requiring **zero** external database servers, SQLite binaries, or backend runtimes.
+  * Automatic fallback initialization with bootstrap seed data on first launch.
+  * Instant read and write performance with zero network latency.
 
 * **🎨 Responsive Glassmorphic UI/UX**
   * Modern dark theme with CSS custom properties, backdrop blur filters, and subtle gradients.
@@ -37,8 +37,8 @@ A modern, fast, and responsive web application for real-time inventory tracking,
   * Debounced SVG chart redraw on browser window resize.
 
 * **🔄 Backup & Migration**
-  * **Export Database**: One-click download of the complete inventory database as a formatted `.json` backup file.
-  * **Import Database**: Upload and sync JSON backup data directly into the SQLite database.
+  * **Export Data**: One-click download of the complete inventory dataset as a formatted `.json` backup file.
+  * **Import Data**: Upload and restore JSON backup data directly into your browser's local storage.
 
 ---
 
@@ -46,36 +46,18 @@ A modern, fast, and responsive web application for real-time inventory tracking,
 
 ```mermaid
 flowchart TD
-    subgraph Browser ["Client-Side (Browser)"]
+    subgraph Browser ["Client-Side Browser Environment"]
         UI["SPA Interface (index.html)"]
-        AuthUI["Glassmorphic Auth Overlay"]
-        AuthScript["Session & Token Manager (auth.js)"]
         AppScript["Dashboard & Table Logic (app.js)"]
-        Header["User Profile & Logout Widget"]
+        MockData["Initial Bootstrap Seed Data (mockData.js)"]
+        StorageEngine[("Browser LocalStorage Engine")]
     end
 
-    subgraph Server ["Backend (Node.js & Express - server.js)"]
-        Static["Static Asset Server"]
-        Router["REST API Endpoints"]
-        AuthMW["JWT Verification Middleware"]
-    end
-
-    subgraph Storage ["Database (database.js)"]
-        Engine[("SQLite: database/stockpro.db")]
-        UsersTable["users (id, name, email, password_hash, role)"]
-        ProductsTable["products (id, user_id, name, sku, category, price, stock, reorder_level)"]
-    end
-
-    UI --> AppScript
-    AuthUI --> AuthScript
-    AuthScript -->|POST /api/auth/login, register| Router
-    AppScript -->|GET, POST, PUT, DELETE /api/products| Router
-    Router --> AuthMW
-    AuthMW --> UsersTable
-    AuthMW --> ProductsTable
-    UsersTable --> Engine
-    ProductsTable --> Engine
-    AuthScript -->|Update User Info| Header
+    UI -->|User Input & Actions| AppScript
+    AppScript -->|Read/Write Records| StorageEngine
+    MockData -.->|Bootstrap on First Launch| StorageEngine
+    StorageEngine -->|Provide Data| AppScript
+    AppScript -->|Render KPI & Tables| UI
 ```
 
 ---
@@ -85,65 +67,45 @@ flowchart TD
 | Layer | Technology | Purpose |
 | :--- | :--- | :--- |
 | **Frontend UI** | HTML5, CSS3 | Glassmorphic design system, responsive grid layouts, custom SVG charts. |
-| **Frontend Logic** | Vanilla JavaScript (ES6+) | Client-side routing, DOM updates, live table filters, event handling. |
-| **Backend Framework** | Node.js (v22+/v24+) & Express 5 | REST API endpoints, static file serving, CORS, JSON body parsing. |
-| **Database** | SQLite (`node:sqlite`) | Serverless, single-file relational database (`stockpro.db`) with WAL mode. |
-| **Authentication** | `jsonwebtoken` (JWT) | Stateless authentication via Bearer tokens. |
-| **Password Security** | `bcryptjs` | Salted one-way password hashing. |
+| **Frontend Logic** | Vanilla JavaScript (ES6+) | Client-side navigation, DOM updates, live table filters, event handling. |
+| **Storage Engine** | Browser LocalStorage API | Fast, offline-first client-side persistent storage. |
+| **Initial Data** | `mockData.js` | Bootstrap dataset for immediate first-launch experience. |
 
 ---
 
-## 🗄️ Database Schema
+## 🗄️ LocalStorage Data Models
 
-### `users` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `TEXT` | `PRIMARY KEY` | Unique user identifier (e.g. `usr_1788...`) |
-| `name` | `TEXT` | `NOT NULL` | User's full name |
-| `email` | `TEXT` | `UNIQUE NOT NULL COLLATE NOCASE` | Unique login email address |
-| `password_hash`| `TEXT` | `NOT NULL` | bcrypt salted password hash |
-| `role` | `TEXT` | `DEFAULT 'admin'` | User access role |
-| `created_at` | `DATETIME`| `DEFAULT CURRENT_TIMESTAMP` | Account creation timestamp |
-| `updated_at` | `DATETIME`| `DEFAULT CURRENT_TIMESTAMP` | Last profile update timestamp |
+### `products` Storage Item
+The inventory catalog is serialized as a JSON array under the `"products"` key in `localStorage`:
 
-### `products` Table
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `TEXT` | `PRIMARY KEY` | Unique product identifier (e.g. `p_1788...`) |
-| `user_id` | `TEXT` | `NOT NULL, FOREIGN KEY (users.id) CASCADE` | Owner user ID |
-| `name` | `TEXT` | `NOT NULL` | Product name |
-| `sku` | `TEXT` | `NOT NULL` | Stock Keeping Unit code (unique per user) |
-| `category` | `TEXT` | `NOT NULL` | Category name |
-| `price` | `REAL` | `NOT NULL DEFAULT 0.0` | Unit selling price (₹) |
-| `stock` | `INTEGER`| `NOT NULL DEFAULT 0` | Available stock count |
-| `reorder_level`| `INTEGER`| `NOT NULL DEFAULT 5` | Low-stock alert threshold |
-| `created_at` | `DATETIME`| `DEFAULT CURRENT_TIMESTAMP` | Creation timestamp |
-| `updated_at` | `DATETIME`| `DEFAULT CURRENT_TIMESTAMP` | Last update timestamp |
+```json
+[
+  {
+    "id": "p_1725732000000",
+    "name": "Wireless Ergonomic Mouse",
+    "sku": "MS-W-01",
+    "category": "Computer Accessories",
+    "price": 49.99,
+    "stock": 35,
+    "reorderLevel": 10,
+    "createdAt": "2026-09-07T18:00:00.000Z",
+    "updatedAt": "2026-09-07T18:00:00.000Z"
+  }
+]
+```
 
----
-
-## 📡 REST API Reference
-
-### Authentication (`/api/auth`)
-
-* **`POST /api/auth/register`**
-  * Registers a new user, hashes password, auto-seeds default inventory data, and returns a 7-day JWT token.
-  * *Body*: `{ "name": "...", "email": "...", "password": "..." }`
-* **`POST /api/auth/login`**
-  * Validates credentials and returns JWT bearer token + user profile.
-  * *Body*: `{ "email": "...", "password": "..." }`
-* **`GET /api/auth/me`**
-  * Returns authenticated user profile.
-  * *Header*: `Authorization: Bearer <token>`
-
-### Products (`/api/products`) — *All endpoints require JWT Bearer token*
-
-* **`GET /api/products`**: Fetch all products owned by the authenticated user.
-* **`POST /api/products`**: Create a new product. Validates SKU uniqueness.
-  * *Body*: `{ "name": "...", "sku": "...", "category": "...", "price": 99.99, "stock": 10, "reorderLevel": 5 }`
-* **`PUT /api/products/:id`**: Update product details. Validates SKU conflict.
-* **`DELETE /api/products/:id`**: Delete a product from SQLite.
-* **`POST /api/products/sync`**: Bulk import and sync products array into the database.
+### Properties Reference
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `String` | Unique product identifier (timestamp-based or seed ID) |
+| `name` | `String` | Product name |
+| `sku` | `String` | Stock Keeping Unit code (unique across inventory) |
+| `category` | `String` | Product category |
+| `price` | `Number` | Unit selling price in currency units (₹) |
+| `stock` | `Number` | Current available quantity in inventory |
+| `reorderLevel` | `Number` | Minimum threshold for low-stock warnings |
+| `createdAt` | `String` | ISO timestamp of product creation |
+| `updatedAt` | `String` | ISO timestamp of last update |
 
 ---
 
@@ -151,15 +113,11 @@ flowchart TD
 
 ```text
 inventory-billing-app/
-├── database/
-│   └── stockpro.db           # SQLite database file (auto-generated)
-├── app.js                    # Inventory dashboard, chart, tables, and CRUD logic
-├── auth.js                   # Client authentication controller & session handling
-├── database.js               # SQLite database engine & queries (node:sqlite)
-├── index.html                # Single Page Application HTML markup & auth overlay
-├── mockData.js               # Initial seed products & billing models
-├── package.json              # Project dependencies & npm scripts
-├── server.js                 # Express backend server with Auth & Products APIs
+├── app.js                    # Inventory dashboard, chart, tables, and LocalStorage CRUD logic
+├── auth.js                   # Client authentication module (LocalStorage powered)
+├── index.html                # Single Page Application HTML markup
+├── mockData.js               # Initial seed products & mock data models
+├── package.json              # Project manifest & scripts
 ├── style.css                 # Dark glassmorphic design system & layout styles
 └── README.md                 # Project documentation
 ```
@@ -169,39 +127,29 @@ inventory-billing-app/
 ## 🚀 Getting Started
 
 ### Prerequisites
-* **Node.js**: v22.0.0 or higher (v24+ recommended for native `node:sqlite` support).
-* **npm**: v10.0.0 or higher.
+Any modern web browser (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari). No database servers or background daemons are needed!
 
-### 1. Installation
-Clone or open the project folder in your terminal, then install dependencies:
+### 1. Launch Directly
+Double click `index.html` to open it in any web browser.
+
+### 2. Or Run via Local Web Server (Optional)
+If you prefer running via a local static web server:
 ```bash
-npm install
+npx serve .
 ```
-
-### 2. Start the Application
-Start the Node.js Express server:
+Or with Python:
 ```bash
-npm start
+python -m http.server 3000
 ```
-
-### 3. Open in Browser
-Navigate to:
-```
-https://inventory-management-server-r1yj.onrender.com/
-```
-
-### 4. Logging In
-* **Quick Demo**: Click the **⚡ Quick Demo Sign In** button on the login screen to sign in instantly with demo credentials (`admin@stockpro.com` / `admin123`).
-* **Create Account**: Switch to the **Create Account** tab, enter your details, and register a new account.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
 ## 🔮 Future Roadmap
 
 * **Billing & Invoicing Engine**: Create, manage, and print invoices with dynamic tax & discount calculations.
-* **Customer Directory**: Customer profile management linked to invoice records.
+* **Customer Directory**: Customer profile management linked to invoice records in LocalStorage.
 * **PDF Export**: Generate downloadable invoice receipts directly from the browser.
-* **Multi-user Roles**: Granular permissions for Admin and Staff members.
 
 ---
 

@@ -12,8 +12,7 @@
   <!-- Mobile Backdrop Overlay for Drawer -->
   <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
-  <!-- Full-Screen Auth Overlay (Login & Registration) [COMMENTED OUT: Login disabled] -->
-  <!--
+  <!-- Full-Screen Auth Overlay (Login & Registration) -->
   <div id="auth-overlay" class="auth-overlay active">
     <div class="auth-card glass-card">
       <div class="auth-header">
@@ -21,7 +20,7 @@
           <div class="auth-logo-icon">S</div>
           <h2>StockPro</h2>
         </div>
-        <p class="auth-subtitle">Secure SQL Database & Inventory Management Portal</p>
+        <p class="auth-subtitle">Local Storage Inventory Management & Dashboard</p>
       </div>
 
       <div class="auth-tabs">
@@ -108,12 +107,11 @@
         </button>
 
         <p class="auth-terms-note">
-          By signing up, an isolated inventory dataset is created for your account in the local SQLite database.
+          By signing up, your inventory data is securely saved in your browser's local storage.
         </p>
       </form>
     </div>
   </div>
-  -->
 
   <div class="app-container">
     
@@ -148,7 +146,7 @@
       
       <div class="sidebar-footer">
         <p>&copy; 2026 StockPro</p>
-        <p style="margin-top: 4px; font-size: 10px;">Offline Local Database</p>
+        <p style="margin-top: 4px; font-size: 10px;">Offline Local Storage</p>
       </div>
     </aside>
 
@@ -173,8 +171,7 @@
             <div style="font-size: 11px; color: var(--text-muted);">Stock Management</div>
           </div>
           
-          <!-- User Profile & Logout Widget [COMMENTED OUT: Login disabled] -->
-          <!--
+          <!-- User Profile & Logout Widget -->
           <div class="user-profile-badge" id="user-profile-badge" style="display: none;">
             <div class="user-avatar" id="header-user-avatar">A</div>
             <div class="user-details">
@@ -185,7 +182,6 @@
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </button>
           </div>
-          -->
         </div>
       </header>
 
@@ -327,11 +323,11 @@
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 <span>Add Product</span>
               </button>
-              <button id="btn-export-db" class="btn btn-secondary" title="Export Inventory Database">
+              <button id="btn-export-db" class="btn btn-secondary" title="Export Inventory Data (JSON)">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>Export</span>
               </button>
-              <button id="btn-import-db" class="btn btn-secondary" title="Import Inventory Database" onclick="document.getElementById('import-file-input').click()">
+              <button id="btn-import-db" class="btn btn-secondary" title="Import Inventory Data (JSON)" onclick="document.getElementById('import-file-input').click()">
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 <span>Import</span>
               </button>
@@ -436,7 +432,7 @@
 
   <!-- Import JS Scripts -->
   <script src="mockData.js"></script>
-  <!-- <script src="auth.js"></script> [COMMENTED OUT: Login disabled] -->
+  <script src="auth.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

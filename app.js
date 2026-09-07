@@ -1,26 +1,24 @@
-// StockPro - Inventory Management & Dashboard Core Script
+// StockPro - Inventory Management & Dashboard Core Script (LocalStorage Engine)
 document.addEventListener("DOMContentLoaded", () => {
   // --- APPLICATION STATE & CONFIG ---
-  const API_BASE_URL = 'https://inventory-management-server-r1yj.onrender.com';
   let products = [];
   let currentTheme = localStorage.getItem("theme") || "dark";
 
   // --- INITIALIZATION ---
   /**
    * Initializes the application state, loads data from localStorage or fallback mock data,
-   * sets the current system date, initializes the theme, and verifies user session with the backend.
+   * sets the current system date, initializes the theme, and attaches event listeners.
    */
-  async function init() {
+  function init() {
     // Load products from localStorage or fallback to bootstrap mock data
-    if (localStorage.getItem("products")) {
-      try {
-        products = JSON.parse(localStorage.getItem("products"));
-      } catch (e) {
-        products = window.initialProducts ? [...window.initialProducts] : [];
-      }
-    } else if (window.initialProducts) {
+    const savedProducts = getFromStorage("products");
+    if (savedProducts && Array.isArray(savedProducts) && savedProducts.length > 0) {
+      products = savedProducts;
+    } else if (window.initialProducts && Array.isArray(window.initialProducts)) {
       products = [...window.initialProducts];
       saveToStorage("products", products);
+    } else {
+      products = [];
     }
 
     // Set system date to today
@@ -37,46 +35,40 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAll();
     setupEventListeners();
 
-    // Check Authentication & Load live products from SQLite database [COMMENTED OUT: Login disabled]
-    // if (window.StockProAuth) {
-    //   const isAuthenticated = await window.StockProAuth.checkSession();
-    //   if (isAuthenticated) {
-    //     await loadProductsFromAPI();
-    //   }
-    // }
-  }
-
-  /**
-   * Fetches user products from SQLite database API and re-renders the views.
-   */
-  async function loadProductsFromAPI() {
-    const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        products = data;
-        saveToStorage("products", products);
-        renderCategoryDropdowns();
-        renderAll();
-      }
-    } catch (err) {
-      console.warn("Could not connect to SQLite backend API, running with local data.", err);
+    // Check user authentication session
+    if (window.StockProAuth) {
+      window.StockProAuth.checkSession();
     }
   }
 
   // --- STORAGE UTILITIES ---
+  /**
+   * Retrieves and parses JSON data from browser's localStorage.
+   * @param {string} key - The localStorage item key.
+   * @param {*} fallback - Default value if not found or invalid.
+   * @returns {*}
+   */
+  function getFromStorage(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+      console.warn(`Error reading ${key} from localStorage:`, e);
+      return fallback;
+    }
+  }
+
   /**
    * Serializes JavaScript data into JSON and stores it in the browser's localStorage.
    * @param {string} key - The localStorage item key.
    * @param {*} data - The value or object to serialize and save.
    */
   function saveToStorage(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error(`Error writing ${key} to localStorage:`, e);
+    }
   }
 
   /**
@@ -476,10 +468,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Processes the Add/Edit Product modal form submission.
    * Validates mandatory fields (Name, SKU, Category), enforces unique SKUs,
-   * saves product to SQLite database when logged in (or localStorage fallback),
-   * refreshes UI views, and closes the modal dialog.
+   * saves product directly to localStorage, refreshes UI views, and closes the modal dialog.
    */
-  async function saveProductHandler() {
+  function saveProductHandler() {
     const idField = document.getElementById("product-id").value;
     const name = document.getElementById("product-name").value.trim();
     const sku = document.getElementById("product-sku").value.trim().toUpperCase();
@@ -493,55 +484,44 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
-
-    if (token) {
-      try {
-        const url = idField ? `${API_BASE_URL}/api/products/${idField}` : `${API_BASE_URL}/api/products`;
-        const method = idField ? 'PUT' : 'POST';
-        const res = await fetch(url, {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ name, sku, category, price, stock, reorderLevel: reorder })
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          alert(data.error || 'Failed to save product to database.');
+    if (idField) {
+      // Editing existing product
+      const idx = products.findIndex(p => p.id === idField);
+      if (idx !== -1) {
+        if (products.some(p => p.sku === sku && p.id !== idField)) {
+          alert("A different product already uses this SKU code. SKU must be unique.");
           return;
         }
-
-        if (idField) {
-          const idx = products.findIndex(p => p.id === idField);
-          if (idx !== -1) products[idx] = data;
-        } else {
-          products.unshift(data);
-        }
-      } catch (err) {
-        console.error("Database save error, saving locally:", err);
+        products[idx] = {
+          ...products[idx],
+          id: idField,
+          name,
+          sku,
+          category,
+          price,
+          stock,
+          reorderLevel: reorder,
+          updatedAt: new Date().toISOString()
+        };
       }
     } else {
-      // Local fallback
-      if (idField) {
-        const idx = products.findIndex(p => p.id === idField);
-        if (idx !== -1) {
-          if (products.some(p => p.sku === sku && p.id !== idField)) {
-            alert("A different product already uses this SKU code. SKU must be unique.");
-            return;
-          }
-          products[idx] = { id: idField, name, sku, category, price, stock, reorderLevel: reorder };
-        }
-      } else {
-        if (products.some(p => p.sku === sku)) {
-          alert("A product with this SKU code already exists. Please choose a unique SKU.");
-          return;
-        }
-        const newId = "p_" + Date.now();
-        products.push({ id: newId, name, sku, category, price, stock, reorderLevel: reorder });
+      // Adding new product
+      if (products.some(p => p.sku === sku)) {
+        alert("A product with this SKU code already exists. Please choose a unique SKU.");
+        return;
       }
+      const newId = "p_" + Date.now();
+      products.unshift({
+        id: newId,
+        name,
+        sku,
+        category,
+        price,
+        stock,
+        reorderLevel: reorder,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
     }
 
     saveToStorage("products", products);
@@ -579,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * - Product add / edit form triggers and submissions
    * - Live inventory search, category filters, and status filters
    * - Delegated table actions (edit product, delete product)
-   * - Database backup export and JSON backup file import
+   * - Inventory backup export and JSON backup file import
    */
   function setupEventListeners() {
     // 1. Desktop Sidebar Navigation Clicks
@@ -710,13 +690,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } else if (target.classList.contains("delete-product-btn")) {
           if (confirm("Are you sure you want to delete this product?")) {
-            const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
-            if (token) {
-              fetch(`${API_BASE_URL}/api/products/${prodId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-              }).catch(err => console.error("Database delete error:", err));
-            }
             products = products.filter(p => p.id !== prodId);
             saveToStorage("products", products);
             renderCategoryDropdowns();
@@ -726,17 +699,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 15. Inventory Database Export
+    // 15. Inventory Data Export
     const btnExport = document.getElementById("btn-export-db");
     if (btnExport) {
       btnExport.addEventListener("click", () => {
-        const dbDump = {
+        const backupData = {
           products,
           exportDate: new Date().toISOString(),
-          version: "2.0"
+          version: "2.0",
+          source: "localStorage"
         };
         
-        const blob = new Blob([JSON.stringify(dbDump, null, 2)], { type: "application/json" });
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -746,7 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 16. Inventory Database Import
+    // 16. Inventory Data Import (JSON file to localStorage)
     const importInput = document.getElementById("import-file-input");
     if (importInput) {
       importInput.addEventListener("change", (e) => {
@@ -754,39 +728,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = async (event) => {
+        reader.onload = (event) => {
           try {
             const imported = JSON.parse(event.target.result);
-            if (imported.products && Array.isArray(imported.products)) {
-              if (confirm("Importing backup data will replace your current inventory database. Continue?")) {
-                const token = window.StockProAuth ? window.StockProAuth.getToken() : null;
-                if (token) {
-                  try {
-                    const res = await fetch(`${API_BASE_URL}/api/products/sync`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                      },
-                      body: JSON.stringify({ products: imported.products })
-                    });
-                    const data = await res.json();
-                    if (data.products) products = data.products;
-                  } catch (syncErr) {
-                    console.error("Failed to sync import with SQLite database:", syncErr);
-                    products = imported.products;
-                  }
-                } else {
-                  products = imported.products;
-                }
+            let importedProducts = null;
 
+            if (Array.isArray(imported)) {
+              importedProducts = imported;
+            } else if (imported && Array.isArray(imported.products)) {
+              importedProducts = imported.products;
+            }
+
+            if (importedProducts) {
+              if (confirm("Importing backup data will replace your current local inventory. Continue?")) {
+                products = importedProducts;
                 saveToStorage("products", products);
                 renderCategoryDropdowns();
                 renderAll();
-                alert("Inventory database successfully imported!");
+                alert("Inventory data successfully imported into local storage!");
               }
             } else {
-              alert("Invalid backup file format. Expected a JSON file with 'products' array.");
+              alert("Invalid backup file format. Expected a JSON file with an array of products.");
             }
           } catch (err) {
             alert("Error reading backup file: " + err.message);
@@ -797,17 +759,20 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 17. Listen for Auth Events (Login / Logout) [COMMENTED OUT: Login disabled]
-    // window.addEventListener('auth:login', async () => {
-    //   await loadProductsFromAPI();
-    // });
+    // 17. Listen for Auth Events (Login / Logout - local session sync)
+    window.addEventListener('auth:login', () => {
+      const savedProducts = getFromStorage("products", []);
+      if (savedProducts && savedProducts.length > 0) {
+        products = savedProducts;
+        renderCategoryDropdowns();
+        renderAll();
+      }
+    });
 
-    // window.addEventListener('auth:logout', () => {
-    //   products = [];
-    //   saveToStorage("products", products);
-    //   renderCategoryDropdowns();
-    //   renderAll();
-    // });
+    window.addEventListener('auth:logout', () => {
+      renderCategoryDropdowns();
+      renderAll();
+    });
   }
 
   // --- UTILITY FUNCTIONS ---
