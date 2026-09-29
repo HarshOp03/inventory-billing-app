@@ -1,0 +1,814 @@
+================================================================================
+STOCKPRO - LOGIN & REGISTRATION SYSTEM EXPLANATION AND CODE
+================================================================================
+
+--------------------------------------------------------------------------------
+1. ARCHITECTURE & WORKFLOW EXPLANATION
+--------------------------------------------------------------------------------
+The StockPro inventory and billing application uses a client-side authentication 
+system backed entirely by the browser's `localStorage`. This allows the application 
+to operate offline without a separate backend server while still supporting multi-user 
+sessions and secure-feeling flows.
+
+Key Components & Features:
+1. Full-Screen Modal Overlay:
+   - When the user visits the application without an active session (`stockpro_token` 
+     or `stockpro_user` not present in `localStorage`), the full-screen authentication 
+     overlay `#auth-overlay` is shown.
+   - It blurs the background dashboard and prevents interaction until signed in.
+
+2. Tab Switcher:
+   - Users can switch between "Sign In" (`#tab-login`) and "Create Account" 
+     (`#tab-register`) seamlessly without page reloads.
+
+3. Default Demo Account:
+   - If no users exist in localStorage, the application seeds a default demo user:
+     * Email: admin@stockpro.com
+     * Password: admin123
+     * Role: Admin
+   - A "Quick Demo Sign In" button (`#btn-quick-demo`) is provided for one-click testing.
+
+4. Validation & Error Handling:
+   - Registration verifies email format, checks for duplicate accounts, ensures 
+     password length is at least 6 characters, and matches the password confirmation.
+   - Login validates email and password against stored records.
+   - Notifications and validation errors are rendered inside the `#auth-alert` container.
+
+5. Password Visibility Toggle:
+   - Both login and registration fields have an interactive eye toggle (`.btn-toggle-password`) 
+     to switch between text and password types.
+
+6. Session State Management:
+   - On successful login/registration, a session token and user profile object are 
+     persisted in `localStorage` (`stockpro_token` and `stockpro_user`).
+   - Dispatches custom DOM events: `auth:login` and `auth:logout` to synchronize 
+     the top navbar badge, user avatar, and inventory data tables.
+
+
+================================================================================
+2. HTML MARKUP: LOGIN & REGISTRATION MODAL (From index.html)
+================================================================================
+
+  <!-- Full-Screen Auth Overlay (Login & Registration) -->
+  <div id="auth-overlay" class="auth-overlay active">
+    <div class="auth-card glass-card">
+      <div class="auth-header">
+        <div class="auth-brand">
+          <div class="auth-logo-icon">S</div>
+          <h2>StockPro</h2>
+        </div>
+        <p class="auth-subtitle">Local Storage Inventory Management & Dashboard</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab-btn active" type="button">Sign In</button>
+        <button id="tab-register" class="auth-tab-btn" type="button">Create Account</button>
+      </div>
+
+      <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+      <form id="form-login" class="auth-form active">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="login-email" class="form-control" placeholder="admin@stockpro.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label for="login-password">Password</label>
+          </div>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" data-target="login-password" aria-label="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-login" class="btn btn-primary auth-submit-btn">
+          <span>Sign In to Dashboard</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <div class="demo-login-box">
+          <span>Testing for the first time?</span>
+          <button type="button" id="btn-quick-demo" class="btn-quick-demo">
+            ⚡ Quick Demo Sign In
+          </button>
+        </div>
+      </form>
+
+      <form id="form-register" class="auth-form">
+        <div class="form-group">
+          <label for="reg-name">Full Name *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="reg-name" class="form-control" placeholder="e.g. Alex Morgan" required autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-email">Work Email *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="reg-email" class="form-control" placeholder="alex@company.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password">Password (min. 6 characters) *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-password" class="form-control" placeholder="Create strong password" minlength="6" required autocomplete="new-password">
+            <button type="button" class="btn-toggle-password" data-target="reg-password" aria-label="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-password-confirm">Confirm Password *</label>
+          <div class="input-with-icon">
+            <svg class="field-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="reg-password-confirm" class="form-control" placeholder="Repeat your password" minlength="6" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-register" class="btn btn-primary auth-submit-btn">
+          <span>Create My Account</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <p class="auth-terms-note">
+          By signing up, your inventory data is securely saved in your browser's local storage.
+        </p>
+      </form>
+    </div>
+  </div>
+
+
+================================================================================
+3. JAVASCRIPT LOGIC: AUTHENTICATION MODULE (From auth.js)
+================================================================================
+
+// =============================================================================
+// StockPro - Authentication & Session Management Module (LocalStorage Powered)
+// =============================================================================
+
+(function () {
+  // State
+  let currentUser = null;
+  let token = localStorage.getItem('stockpro_token') || null;
+
+  // DOM Elements
+  const authOverlay = document.getElementById('auth-overlay');
+  const authAlert = document.getElementById('auth-alert');
+  const tabLogin = document.getElementById('tab-login');
+  const tabRegister = document.getElementById('tab-register');
+  const formLogin = document.getElementById('form-login');
+  const formRegister = document.getElementById('form-register');
+  const btnQuickDemo = document.getElementById('btn-quick-demo');
+  const userProfileBadge = document.getElementById('user-profile-badge');
+  const headerUserName = document.getElementById('header-user-name');
+  const headerUserRole = document.getElementById('header-user-role');
+  const headerUserAvatar = document.getElementById('header-user-avatar');
+  const btnLogout = document.getElementById('btn-logout');
+
+  // --- LOCALSTORAGE USER REPOSITORY ---
+  /**
+   * Retrieves registered users from localStorage.
+   * Ensures default demo user is always seeded on first run.
+   * @returns {Array}
+   */
+  function getUsersFromStorage() {
+    try {
+      const data = localStorage.getItem('stockpro_users');
+      let users = data ? JSON.parse(data) : [];
+      if (!Array.isArray(users) || users.length === 0) {
+        users = [
+          {
+            id: 'u_admin_demo',
+            name: 'Harsh Demo',
+            email: 'admin@stockpro.com',
+            password: 'admin123',
+            role: 'Admin',
+            createdAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('stockpro_users', JSON.stringify(users));
+      }
+      return users;
+    } catch (e) {
+      console.warn('Error reading stockpro_users from localStorage:', e);
+      return [];
+    }
+  }
+
+  /**
+   * Persists users list to localStorage.
+   * @param {Array} users
+   */
+  function saveUsersToStorage(users) {
+    try {
+      localStorage.setItem('stockpro_users', JSON.stringify(users));
+    } catch (e) {
+      console.error('Error saving stockpro_users to localStorage:', e);
+    }
+  }
+
+  /**
+   * Displays an alert notification inside the auth modal.
+   * @param {string} message - Message text.
+   * @param {string} type - 'danger' | 'success'.
+   */
+  function showAlert(message, type = 'danger') {
+    if (!authAlert) return;
+    authAlert.className = `auth-alert ${type}`;
+    authAlert.textContent = message;
+    authAlert.style.display = 'block';
+  }
+
+  /**
+   * Clears the alert banner.
+   */
+  function hideAlert() {
+    if (!authAlert) return;
+    authAlert.style.display = 'none';
+    authAlert.textContent = '';
+  }
+
+  /**
+   * Switches between Sign In and Registration forms.
+   * @param {string} tab - 'login' | 'register'.
+   */
+  function switchAuthTab(tab) {
+    hideAlert();
+    if (tab === 'login') {
+      if (tabLogin) tabLogin.classList.add('active');
+      if (tabRegister) tabRegister.classList.remove('active');
+      if (formLogin) formLogin.classList.add('active');
+      if (formRegister) formRegister.classList.remove('active');
+    } else {
+      if (tabRegister) tabRegister.classList.add('active');
+      if (tabLogin) tabLogin.classList.remove('active');
+      if (formRegister) formRegister.classList.add('active');
+      if (formLogin) formLogin.classList.remove('active');
+    }
+  }
+
+  /**
+   * Shows the full-screen authentication overlay.
+   */
+  function showAuth() {
+    if (authOverlay) authOverlay.classList.add('active');
+    if (userProfileBadge) userProfileBadge.style.display = 'none';
+  }
+
+  /**
+   * Hides the full-screen authentication overlay.
+   */
+  function hideAuth() {
+    if (authOverlay) authOverlay.classList.remove('active');
+    updateHeaderUser();
+  }
+
+  /**
+   * Updates the user profile widget in the header bar.
+   */
+  function updateHeaderUser() {
+    if (!currentUser || !userProfileBadge) return;
+    userProfileBadge.style.display = 'flex';
+    if (headerUserName) headerUserName.textContent = currentUser.name || 'User';
+    if (headerUserRole) headerUserRole.textContent = (currentUser.role || 'Admin').toUpperCase();
+    if (headerUserAvatar) {
+      const initial = (currentUser.name && currentUser.name[0]) ? currentUser.name[0].toUpperCase() : 'U';
+      headerUserAvatar.textContent = initial;
+    }
+  }
+
+  /**
+   * Authenticates user via localStorage user records.
+   * @param {string} email
+   * @param {string} password
+   */
+  function login(email, password) {
+    const users = getUsersFromStorage();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const user = users.find(u => u.email.toLowerCase() === normalizedEmail && u.password === password);
+
+    if (!user) {
+      throw new Error('Invalid email or password. Please check your credentials.');
+    }
+
+    const sessionToken = 'token_' + Date.now();
+    const safeUser = { id: user.id, name: user.name, email: user.email, role: user.role || 'Admin' };
+    setSession(sessionToken, safeUser);
+    return { token: sessionToken, user: safeUser };
+  }
+
+  /**
+   * Registers a new user directly in localStorage.
+   * @param {string} name
+   * @param {string} email
+   * @param {string} password
+   */
+  function register(name, email, password) {
+    const users = getUsersFromStorage();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (!name || !name.trim()) {
+      throw new Error('Please enter your full name.');
+    }
+
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      throw new Error('Please enter a valid email address.');
+    }
+
+    if (!password || password.length < 6) {
+      throw new Error('Password must be at least 6 characters.');
+    }
+
+    if (users.some(u => u.email.toLowerCase() === normalizedEmail)) {
+      throw new Error('An account with this email address already exists. Please sign in instead.');
+    }
+
+    const newUser = {
+      id: 'u_' + Date.now(),
+      name: name.trim(),
+      email: normalizedEmail,
+      password: password,
+      role: 'Admin',
+      createdAt: new Date().toISOString()
+    };
+
+    users.push(newUser);
+    saveUsersToStorage(users);
+
+    const sessionToken = 'token_' + Date.now();
+    const safeUser = { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role };
+    setSession(sessionToken, safeUser);
+    return { token: sessionToken, user: safeUser };
+  }
+
+  /**
+   * Sets token and user in memory and localStorage.
+   * @param {string} newToken
+   * @param {Object} newUser
+   */
+  function setSession(newToken, newUser) {
+    token = newToken;
+    currentUser = newUser;
+    localStorage.setItem('stockpro_token', newToken);
+    localStorage.setItem('stockpro_user', JSON.stringify(newUser));
+  }
+
+  /**
+   * Clears the user session and re-displays the login screen.
+   */
+  function logout() {
+    token = null;
+    currentUser = null;
+    localStorage.removeItem('stockpro_token');
+    localStorage.removeItem('stockpro_user');
+    showAuth();
+    switchAuthTab('login');
+    showAlert('You have been signed out.', 'success');
+    
+    // Dispatch custom auth-change event
+    window.dispatchEvent(new CustomEvent('auth:logout'));
+  }
+
+  /**
+   * Validates active session on application startup.
+   */
+  function checkSession() {
+    const savedToken = localStorage.getItem('stockpro_token');
+    const savedUser = localStorage.getItem('stockpro_user');
+    
+    if (!savedToken || !savedUser) {
+      showAuth();
+      return false;
+    }
+
+    try {
+      currentUser = JSON.parse(savedUser);
+      token = savedToken;
+      hideAuth();
+      window.dispatchEvent(new CustomEvent('auth:login', { detail: { user: currentUser, token } }));
+      return true;
+    } catch (err) {
+      logout();
+      return false;
+    }
+  }
+
+  /**
+   * Sets up auth event listeners (forms, tabs, buttons).
+   */
+  function setupAuthEvents() {
+    // 1. Tab switching
+    if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
+    if (tabRegister) tabRegister.addEventListener('click', () => switchAuthTab('register'));
+
+    // 2. Password visibility toggles
+    document.querySelectorAll('.btn-toggle-password').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (input) {
+          input.type = input.type === 'password' ? 'text' : 'password';
+        }
+      });
+    });
+
+    // 3. Login Form Submit
+    if (formLogin) {
+      formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideAlert();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        const submitBtn = document.getElementById('btn-submit-login');
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.querySelector('span').textContent = 'Signing in...';
+          }
+          login(email, password);
+          hideAuth();
+          window.dispatchEvent(new CustomEvent('auth:login', { detail: { user: currentUser, token } }));
+        } catch (err) {
+          showAlert(err.message, 'danger');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.querySelector('span').textContent = 'Sign In to Dashboard';
+          }
+        }
+      });
+    }
+
+    // 4. Register Form Submit
+    if (formRegister) {
+      formRegister.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideAlert();
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-password-confirm').value;
+        const submitBtn = document.getElementById('btn-submit-register');
+
+        if (password !== confirmPassword) {
+          showAlert('Passwords do not match. Please verify.', 'danger');
+          return;
+        }
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.querySelector('span').textContent = 'Creating Account...';
+          }
+          register(name, email, password);
+          hideAuth();
+          window.dispatchEvent(new CustomEvent('auth:login', { detail: { user: currentUser, token } }));
+        } catch (err) {
+          showAlert(err.message, 'danger');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.querySelector('span').textContent = 'Create My Account';
+          }
+        }
+      });
+    }
+
+    // 5. Quick Demo Sign In
+    if (btnQuickDemo) {
+      btnQuickDemo.addEventListener('click', () => {
+        hideAlert();
+        const demoEmail = 'admin@stockpro.com';
+        const demoPass = 'admin123';
+        const emailInput = document.getElementById('login-email');
+        const passInput = document.getElementById('login-password');
+        if (emailInput) emailInput.value = demoEmail;
+        if (passInput) passInput.value = demoPass;
+
+        try {
+          btnQuickDemo.disabled = true;
+          btnQuickDemo.textContent = 'Authenticating...';
+          
+          // Ensure demo user exists in localStorage
+          getUsersFromStorage();
+          login(demoEmail, demoPass);
+          hideAuth();
+          window.dispatchEvent(new CustomEvent('auth:login', { detail: { user: currentUser, token } }));
+        } catch (err) {
+          showAlert('Demo sign in error: ' + err.message, 'danger');
+        } finally {
+          btnQuickDemo.disabled = false;
+          btnQuickDemo.textContent = '⚡ Quick Demo Sign In';
+        }
+      });
+    }
+
+    // 6. Logout button in top bar
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        if (confirm('Are you sure you want to sign out?')) {
+          logout();
+        }
+      });
+    }
+  }
+
+  // Initialize Auth events and ensure seed user exists
+  setupAuthEvents();
+  getUsersFromStorage();
+
+  // Expose global StockProAuth helper object
+  window.StockProAuth = {
+    getToken: () => token || localStorage.getItem('stockpro_token'),
+    getUser: () => currentUser,
+    checkSession,
+    login,
+    register,
+    logout,
+    showAuth,
+    hideAuth
+  };
+})();
+
+
+================================================================================
+4. CSS STYLESHEET: AUTHENTICATION STYLING (From style.css)
+================================================================================
+
+/* ==========================================================================
+   AUTHENTICATION & USER PROFILE STYLES
+   ========================================================================== */
+
+/* Full-Screen Auth Overlay */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 25%, rgba(99, 102, 241, 0.18) 0%, rgba(99, 13, 22, 0.97) 75%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 24px 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s ease;
+  overflow-y: auto;
+}
+
+.auth-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Auth Card Container */
+.auth-card {
+  width: 100%;
+  max-width: 460px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.12);
+  padding: 36px 32px;
+  animation: authCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes authCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Auth Brand Header */
+.auth-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.auth-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 24px;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+.auth-brand h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.auth-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Segmented Tab Switcher */
+.auth-tabs {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.auth-tab-btn.active {
+  background: var(--color-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+}
+
+/* Alert Notification Banner */
+.auth-alert {
+  padding: 12px 16px;
+  border-radius: var(--border-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease;
+}
+
+.auth-alert.danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-left: 4px solid var(--color-danger);
+  color: #fca5a5;
+}
+
+.auth-alert.success {
+  background: rgba(16, 185, 129, 0.12);
+  border-left: 4px solid var(--color-success);
+  color: #6ee7b7;
+}
+
+/* Auth Forms */
+.auth-form {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-form.active {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Inputs with Icons */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon .field-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color var(--transition-speed);
+}
+
+.input-with-icon .form-control {
+  padding-left: 42px;
+  padding-right: 42px;
+  width: 100%;
+}
+
+.input-with-icon .form-control:focus + .field-icon,
+.input-with-icon:focus-within .field-icon {
+  color: var(--color-primary-light);
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-speed);
+}
+
+.btn-toggle-password:hover {
+  color: var(--text-primary);
+}
+
+/* Auth Submit Button */
+.auth-submit-btn {
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+  border-radius: var(--border-radius-sm);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+}
+
+.auth-submit-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+.auth-terms-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* Quick Demo Login Box */
+.demo-login-box {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.demo-login-box span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.btn-quick-demo {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary-light);
+  border: 1px dashed rgba(99, 102, 241, 0.35);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.btn-quick-demo:hover {
+  background: rgba(99, 102, 241, 0.22);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}

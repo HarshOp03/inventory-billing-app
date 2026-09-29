@@ -107,18 +107,61 @@ The inventory catalog is serialized as a JSON array under the `"products"` key i
 | `createdAt` | `String` | ISO timestamp of product creation |
 | `updatedAt` | `String` | ISO timestamp of last update |
 
+### `invoices` Storage Item
+Sales receipts and invoice records are persisted in `localStorage` under `"invoices"`:
+
+```json
+[
+  {
+    "id": "INV-2026-0001",
+    "customerId": "c1",
+    "customerName": "Alice Johnson",
+    "customerPhone": "+1 (555) 234-5678",
+    "date": "2026-08-10T14:30:00.000Z",
+    "items": [
+      { "productId": "p1", "productName": "Premium Wireless Headphones", "sku": "WHEAD-001", "price": 129.99, "quantity": 1, "total": 129.99 }
+    ],
+    "subtotal": 129.99,
+    "discountType": "percent",
+    "discountValue": 5,
+    "discountAmount": 6.50,
+    "taxRate": 18,
+    "taxAmount": 22.23,
+    "total": 145.72,
+    "paymentMethod": "cash",
+    "paymentDetails": { "cashReceived": 150, "changeGiven": 4.28 }
+  }
+]
+```
+
+### `customers` Storage Item
+Customer directory profiles are stored in `localStorage` under `"customers"`:
+
+```json
+[
+  {
+    "id": "c1",
+    "name": "Alice Johnson",
+    "email": "alice.j@example.com",
+    "phone": "+1 (555) 234-5678",
+    "address": "123 Maple Street, Springfield"
+  }
+]
+```
+
 ---
 
 ## 📂 Project Directory Structure
 
 ```text
 inventory-billing-app/
-├── app.js                    # Inventory dashboard, chart, tables, and LocalStorage CRUD logic
+├── app.js                    # Core SPA logic: Dashboard, Inventory CRUD, POS & Billing Engine
 ├── auth.js                   # Client authentication module (LocalStorage powered)
-├── index.html                # Single Page Application HTML markup
-├── mockData.js               # Initial seed products & mock data models
+├── index.html                # Single Page Application HTML markup & modals
+├── mockData.js               # Initial seed products, customers & mock invoices
 ├── package.json              # Project manifest & scripts
-├── style.css                 # Dark glassmorphic design system & layout styles
+├── qrcode.js                 # Standalone offline QR code SVG & Canvas generation engine
+├── style.css                 # Dark glassmorphic design system, POS layouts & print styles
 └── README.md                 # Project documentation
 ```
 
@@ -145,13 +188,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🔮 Future Roadmap
+## 🧾 Billing & POS Workflow
 
-* **Billing & Invoicing Engine**: Create, manage, and print invoices with dynamic tax & discount calculations.
-* **Customer Directory**: Customer profile management linked to invoice records in LocalStorage.
-* **PDF Export**: Generate downloadable invoice receipts directly from the browser.
+1. Navigate to **Billing & POS** from the sidebar or mobile bottom navigation bar.
+2. Enter customer name (optional autocomplete) or select a retail walk-in.
+3. Select items from the dropdown or click **Quick Pick** chips for 1-click additions.
+4. Adjust quantities or discounts (% or Flat ₹); GST/tax is calculated dynamically in real-time.
+5. Choose payment method:
+   - **Cash Payment**: Enter cash tendered or click quick presets (`Exact`, `+₹50`, `+₹100`, `+₹500`, `Round ₹100`) to compute change.
+   - **QR Code (UPI)**: Generates a live, scannable UPI QR code SVG with merchant VPA and bill total.
+6. Click **Complete Sale & Print Bill**:
+   - Deducts stock instantly from inventory.
+   - Generates sequential invoice (`INV-2026-XXXX`).
+   - Displays clean, printable thermal-style receipt modal with verification QR code.
+7. Access **Invoices History** to search, filter by payment method, view past receipts, or export JSON backups.
 
 ---
 
 ## 📄 License
 This project is licensed under the [ISC License](LICENSE).
+

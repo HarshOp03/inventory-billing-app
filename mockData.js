@@ -29,7 +29,9 @@ const initialInvoices = [
     taxAmount: 17.99,
     discountRate: 5,
     discountAmount: 9.00,
-    total: 188.88
+    total: 188.88,
+    paymentMethod: "cash",
+    paymentDetails: { cashReceived: 200, changeGiven: 11.12 }
   },
   {
     id: "INV-2026-0002",
@@ -45,7 +47,9 @@ const initialInvoices = [
     taxAmount: 144.30,
     discountRate: 10,
     discountAmount: 144.30,
-    total: 1443.00
+    total: 1443.00,
+    paymentMethod: "qrcode",
+    paymentDetails: { upiId: "techcorp@okaxis", txnRef: "UPI-9823481203", status: "PAID" }
   },
   {
     id: "INV-2026-0003",
@@ -60,7 +64,9 @@ const initialInvoices = [
     taxAmount: 9.00,
     discountRate: 0,
     discountAmount: 0.00,
-    total: 99.00
+    total: 99.00,
+    paymentMethod: "cash",
+    paymentDetails: { cashReceived: 100, changeGiven: 1.00 }
   }
 ];
 
